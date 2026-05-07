@@ -488,16 +488,19 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
                     }}>
                       {/* Chat Bubble for the first item */}
                       {i === 0 && !animatingItem && (
-                         <div className="fade-up" style={{
-                           position: "absolute", bottom: "110%", left: "50%", transform: "translateX(-50%)",
-                           background: "rgba(15,20,25,0.9)", border: "2px solid #00D4FF", borderRadius: 12,
-                           padding: "8px 12px", whiteSpace: "nowrap", zIndex: 20,
-                           boxShadow: "0 0 15px rgba(0,212,255,0.4)"
+                         <div style={{
+                           position: "absolute", bottom: "110%", left: "50%", transform: "translateX(-50%)", zIndex: 20
                          }}>
-                           <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", marginBottom: 2 }}>{item.name}</div>
-                           <div style={{ fontSize: 10, color: "#00D4FF", fontWeight: 700 }}>{item.desc}</div>
-                           {/* Bubble tail */}
-                           <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 10, height: 10, background: "rgba(15,20,25,0.9)", borderBottom: "2px solid #00D4FF", borderRight: "2px solid #00D4FF" }} />
+                           <div className="fade-up" style={{
+                             background: "rgba(15,20,25,0.9)", border: "2px solid #00D4FF", borderRadius: 12,
+                             padding: "8px 12px", whiteSpace: "nowrap",
+                             boxShadow: "0 0 15px rgba(0,212,255,0.4)", position: "relative"
+                           }}>
+                             <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", marginBottom: 2, textAlign: "center" }}>{item.name}</div>
+                             <div style={{ fontSize: 10, color: "#00D4FF", fontWeight: 700, textAlign: "center" }}>{item.desc}</div>
+                             {/* Bubble tail */}
+                             <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 10, height: 10, background: "rgba(15,20,25,0.9)", borderBottom: "2px solid #00D4FF", borderRight: "2px solid #00D4FF" }} />
+                           </div>
                          </div>
                       )}
                       {item.icon}
