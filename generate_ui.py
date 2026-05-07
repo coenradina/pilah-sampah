@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import os
+
+code = """import { useState, useRef, useEffect } from "react";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -43,7 +45,7 @@ const calcAccuracy = (items: { correct: boolean }[]) =>
 
 // ─── Animations & Global CSS ──────────────────────────────────────────────────
 
-const GAME_CSS = `
+const GAME_CSS = \`
   body {
     background-color: #0F1419;
     background-image: radial-gradient(circle at top center, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
@@ -157,20 +159,20 @@ const GAME_CSS = `
     animation: scanLaser 1.5s ease-in-out infinite;
     z-index: 50;
   }
-`;
+\`;
 
 // ─── Shared SVG Components ───────────────────────────────────────────────────
 
 function NeonBin({ color, icon }: { color: string; icon: string }) {
   return (
     <div style={{ position: "relative", width: 64, height: 80, margin: "0 auto" }}>
-      <svg width="64" height="80" viewBox="0 0 64 80" style={{ display: "block", filter: `drop-shadow(0 0 8px ${color}80)` }}>
+      <svg width="64" height="80" viewBox="0 0 64 80" style={{ display: "block", filter: \`drop-shadow(0 0 8px \${color}80)\` }}>
         <path d="M8,18 L56,18 L51,75 C50,78 48,80 45,80 L19,80 C16,80 14,78 13,75 Z" fill="rgba(15,20,25,0.9)" />
         <path d="M8,18 L56,18 L51,75 C50,78 48,80 45,80 L19,80 C16,80 14,78 13,75 Z" fill="none" stroke={color} strokeWidth="3" />
         <rect x="4" y="8" width="56" height="10" rx="3" fill="rgba(15,20,25,0.9)" stroke={color} strokeWidth="3" />
         <rect x="22" y="3" width="20" height="5" rx="2" fill="none" stroke={color} strokeWidth="3" />
       </svg>
-      <div style={{ position: "absolute", top: 32, left: 0, width: "100%", textAlign: "center", fontSize: 26, textShadow: `0 0 10px ${color}` }}>{icon}</div>
+      <div style={{ position: "absolute", top: 32, left: 0, width: "100%", textAlign: "center", fontSize: 26, textShadow: \`0 0 10px \${color}\` }}>{icon}</div>
     </div>
   );
 }
@@ -260,7 +262,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 
         {/* Robot */}
         <div style={{
-          position: "absolute", top: `${robotPos.y}%`, left: `${robotPos.x}%`,
+          position: "absolute", top: \`\${robotPos.y}%\`, left: \`\${robotPos.x}%\`,
           transform: "translate(-50%, -50%)",
           fontSize: 64, zIndex: 10, filter: "drop-shadow(0 0 10px rgba(0,212,255,0.5))",
           transition: "all 0.6s cubic-bezier(0.34,1.56,0.64,1)"
@@ -276,7 +278,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         {/* Trash on ground */}
         {!hasTrash && (
           <div style={{
-            position: "absolute", top: `${trashPos.y}%`, left: `${trashPos.x}%`,
+            position: "absolute", top: \`\${trashPos.y}%\`, left: \`\${trashPos.x}%\`,
             transform: "translate(-50%, -50%)",
             fontSize: 40, opacity: trashOpacity, zIndex: 5,
             transition: "all 0.4s cubic-bezier(0.34,1.56,0.64,1)"
@@ -347,7 +349,7 @@ function StepIndicator({ step }: { step: number }) {
             fontSize: 11, fontWeight: 800, letterSpacing: 1,
             background: color,
             color: text,
-            border: `2px solid ${border}`,
+            border: \`2px solid \${border}\`,
             boxShadow: shadow,
             transition: "all 0.3s ease",
           }}>
@@ -364,8 +366,8 @@ function NeonProgressBar({ pct, color = "#00D4FF", label }: { pct: number; color
     <div>
       <div style={{ height: 12, borderRadius: 6, background: "rgba(255,255,255,0.1)", border: "1px solid #334155", overflow: "hidden" }}>
         <div style={{ 
-          height: "100%", width: `${pct}%`, background: color, 
-          boxShadow: `0 0 10px ${color}, inset 0 0 5px #fff`,
+          height: "100%", width: \`\${pct}%\`, background: color, 
+          boxShadow: \`0 0 10px \${color}, inset 0 0 5px #fff\`,
           transition: "width 0.4s ease" 
         }} />
       </div>
@@ -447,7 +449,7 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <NeonProgressBar pct={progress} label={labeled.length < MIN_LABELS ? `SYS: ${labeled.length}/${MIN_LABELS} DATA REQUIRED` : `SYS: ${labeled.length} DATA READY`} />
+        <NeonProgressBar pct={progress} label={labeled.length < MIN_LABELS ? \`SYS: \${labeled.length}/\${MIN_LABELS} DATA REQUIRED\` : \`SYS: \${labeled.length} DATA READY\`} />
       </div>
 
       {queue.length > 0 || animatingItem ? (
@@ -502,8 +504,8 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
                 padding: "8px 24px", borderRadius: 12, fontSize: 18, fontWeight: 900,
                 background: "rgba(15,20,25,0.9)",
                 color: feedback.correct ? "#00FF41" : "#FF0055",
-                border: `3px solid ${feedback.correct ? "#00FF41" : "#FF0055"}`,
-                boxShadow: `0 0 20px ${feedback.correct ? "rgba(0,255,65,0.4)" : "rgba(255,0,85,0.4)"}`,
+                border: \`3px solid \${feedback.correct ? "#00FF41" : "#FF0055"}\`,
+                boxShadow: \`0 0 20px \${feedback.correct ? "rgba(0,255,65,0.4)" : "rgba(255,0,85,0.4)"}\`,
                 zIndex: 20, whiteSpace: "nowrap"
               }}>
                 {feedback.correct ? "VALID +10" : "INVALID"}
@@ -531,10 +533,10 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
                 onMouseEnter={() => setHighlight(cat.id)}
                 onMouseLeave={() => setHighlight(null)}
                 style={{
-                  flex: 1, padding: "16px 4px", border: `3px solid ${highlight === cat.id ? cat.color : "#334155"}`,
-                  background: highlight === cat.id ? `rgba(${cat.id==='organik'?'0,255,65':cat.id==='plastik'?'0,212,255':'255,215,0'}, 0.1)` : "rgba(15,20,25,0.8)",
+                  flex: 1, padding: "16px 4px", border: \`3px solid \${highlight === cat.id ? cat.color : "#334155"}\`,
+                  background: highlight === cat.id ? \`rgba(\${cat.id==='organik'?'0,255,65':cat.id==='plastik'?'0,212,255':'255,215,0'}, 0.1)\` : "rgba(15,20,25,0.8)",
                   display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-                  boxShadow: highlight === cat.id ? `0 0 15px ${cat.color}80, inset 0 0 10px ${cat.color}40` : "0 4px 6px rgba(0,0,0,0.3)",
+                  boxShadow: highlight === cat.id ? \`0 0 15px \${cat.color}80, inset 0 0 10px \${cat.color}40\` : "0 4px 6px rgba(0,0,0,0.3)",
                   transform: highlight === cat.id ? "translateY(-4px)" : "none",
                 }}>
                 <NeonBin color={highlight === cat.id ? cat.color : "#64748b"} icon={cat.icon} />
@@ -552,7 +554,7 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
       )}
 
       <button className="neon-btn" onClick={() => onComplete(labeled, score)} disabled={!canProceed} style={{ width: "100%" }}>
-        {canProceed ? "INITIATE TRAINING //" : `REQUIRES ${MIN_LABELS - labeled.length} MORE`}
+        {canProceed ? "INITIATE TRAINING //" : \`REQUIRES \${MIN_LABELS - labeled.length} MORE\`}
       </button>
     </div>
   );
@@ -594,9 +596,9 @@ function TrainingStage({ labeled, score, onComplete }: { labeled: LabeledItem2[]
           return (
             <div key={cat.id} className="neon-card" style={{
               flex: 1, textAlign: "center", padding: "16px 8px", borderRadius: 16,
-              border: `2px solid ${cat.color}60`
+              border: \`2px solid \${cat.color}60\`
             }}>
-              <div style={{ fontSize: 28, textShadow: `0 0 10px ${cat.color}` }}>{cat.icon}</div>
+              <div style={{ fontSize: 28, textShadow: \`0 0 10px \${cat.color}\` }}>{cat.icon}</div>
               <div style={{ fontSize: 24, fontWeight: 900, color: "#fff", marginTop: 8 }}>{count}</div>
               <div style={{ fontSize: 10, color: cat.color, fontWeight: 800, letterSpacing: 1 }}>{cat.id.toUpperCase()}</div>
             </div>
@@ -695,7 +697,7 @@ function TestingStage({ accuracy, onFinish }: { accuracy: number; onFinish: (res
           <div key={i} style={{
             width: 30, height: 6, borderRadius: 3,
             background: i < idx ? (items[i].correct ? "#00FF41" : "#FF0055") : i === idx ? "#00D4FF" : "#334155",
-            boxShadow: i <= idx ? `0 0 10px ${i < idx ? (items[i].correct ? "#00FF41" : "#FF0055") : "#00D4FF"}` : "none",
+            boxShadow: i <= idx ? \`0 0 10px \${i < idx ? (items[i].correct ? "#00FF41" : "#FF0055") : "#00D4FF"}\` : "none",
             transition: "all 0.3s ease",
           }} />
         ))}
@@ -730,13 +732,13 @@ function TestingStage({ accuracy, onFinish }: { accuracy: number; onFinish: (res
           <div className="bounce-in" style={{
             padding: "24px", borderRadius: 16,
             background: "rgba(15,20,25,0.9)",
-            border: `2px solid ${current.correct ? "#00FF41" : "#FF0055"}`,
-            boxShadow: `0 0 20px ${current.correct ? "rgba(0,255,65,0.2)" : "rgba(255,0,85,0.2)"}`,
+            border: \`2px solid \${current.correct ? "#00FF41" : "#FF0055"}\`,
+            boxShadow: \`0 0 20px \${current.correct ? "rgba(0,255,65,0.2)" : "rgba(255,0,85,0.2)"}\`,
           }}>
             <p style={{ fontSize: 12, margin: "0 0 8px", color: "#94a3b8", fontWeight: 800, letterSpacing: 1 }}>AI CLASSIFICATION:</p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 12 }}>
-              <span style={{ fontSize: 32, textShadow: `0 0 15px ${predCat.color}` }}>{predCat.icon}</span>
-              <span style={{ fontSize: 24, fontWeight: 900, color: predCat.color, textShadow: `0 0 10px ${predCat.color}80` }}>{predCat.label.toUpperCase()}</span>
+              <span style={{ fontSize: 32, textShadow: \`0 0 15px \${predCat.color}\` }}>{predCat.icon}</span>
+              <span style={{ fontSize: 24, fontWeight: 900, color: predCat.color, textShadow: \`0 0 10px \${predCat.color}80\` }}>{predCat.label.toUpperCase()}</span>
             </div>
             
             {current.correct ? (
@@ -767,9 +769,9 @@ function ResultsStage({ results, totalScore, onReplay }: { results: PredictionIt
 
   return (
     <div className="fade-up">
-      <div className="neon-card" style={{ textAlign: "center", padding: "40px 24px", marginBottom: 24, borderColor: color, boxShadow: `0 0 30px ${color}40, inset 0 0 15px ${color}20` }}>
+      <div className="neon-card" style={{ textAlign: "center", padding: "40px 24px", marginBottom: 24, borderColor: color, boxShadow: \`0 0 30px \${color}40, inset 0 0 15px \${color}20\` }}>
         <p style={{ fontSize: 14, color: "#94a3b8", fontWeight: 800, letterSpacing: 2, margin: "0 0 8px" }}>AI ACCURACY RATING</p>
-        <p style={{ fontSize: 64, fontWeight: 900, color: "#fff", margin: "0 0 24px", lineHeight: 1, textShadow: `0 0 20px ${color}` }}>{accuracy}%</p>
+        <p style={{ fontSize: 64, fontWeight: 900, color: "#fff", margin: "0 0 24px", lineHeight: 1, textShadow: \`0 0 20px \${color}\` }}>{accuracy}%</p>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 32 }}>
           {results.map((r, i) => (
@@ -777,8 +779,8 @@ function ResultsStage({ results, totalScore, onReplay }: { results: PredictionIt
               width: 44, height: 44, borderRadius: 12, fontSize: 24,
               display: "flex", alignItems: "center", justifyContent: "center",
               background: "rgba(15,20,25,0.8)",
-              border: `2px solid ${r.correct ? "#00FF41" : "#FF0055"}`,
-              boxShadow: `0 0 10px ${r.correct ? "rgba(0,255,65,0.3)" : "rgba(255,0,85,0.3)"}`
+              border: \`2px solid \${r.correct ? "#00FF41" : "#FF0055"}\`,
+              boxShadow: \`0 0 10px \${r.correct ? "rgba(0,255,65,0.3)" : "rgba(255,0,85,0.3)"}\`
             }}>
               {r.icon}
             </div>
@@ -868,3 +870,9 @@ export default function App() {
     </div>
   );
 }
+"""
+
+with open("penjaga_lingkungan.tsx", "w") as f:
+    f.write(code)
+
+print("Created penjaga_lingkungan.tsx successfully")
