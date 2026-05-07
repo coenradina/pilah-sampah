@@ -113,14 +113,41 @@ const GAME_CSS = `
   .robot-sprite { transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1); }
   .trash-sprite { transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1); }
   .bin-shake { animation: binShakeAnim 0.4s ease-in-out; }
+  @keyframes conveyor {
+    from { background-position: 0 0; }
+    to { background-position: -40px 0; }
+  }
 `;
+
+// ─── Shared SVG Components ───────────────────────────────────────────────────
+
+function BinGraphic({ color, icon, border }: { color: string; icon: string; border: string }) {
+  return (
+    <div style={{ position: "relative", width: 64, height: 80, margin: "0 auto" }}>
+      <svg width="64" height="80" viewBox="0 0 64 80" style={{ display: "block" }}>
+        {/* Shadow */}
+        <path d="M8,18 L56,18 L51,75 C50,78 48,80 45,80 L19,80 C16,80 14,78 13,75 Z" fill="rgba(0,0,0,0.1)" transform="translate(2, 2)" />
+        {/* Main Body */}
+        <path d="M8,18 L56,18 L51,75 C50,78 48,80 45,80 L19,80 C16,80 14,78 13,75 Z" fill={color} opacity="0.9" />
+        {/* Stroke */}
+        <path d="M8,18 L56,18 L51,75 C50,78 48,80 45,80 L19,80 C16,80 14,78 13,75 Z" fill="none" stroke={border} strokeWidth="3" />
+        {/* Lid */}
+        <rect x="4" y="8" width="56" height="10" rx="3" fill={color} stroke={border} strokeWidth="3" />
+        {/* Handle */}
+        <rect x="22" y="3" width="20" height="5" rx="2" fill="#e2e8f0" stroke={border} strokeWidth="3" />
+      </svg>
+      {/* Logo */}
+      <div style={{ position: "absolute", top: 32, left: 0, width: "100%", textAlign: "center", fontSize: 26, textShadow: "0 2px 4px rgba(0,0,0,0.15)" }}>{icon}</div>
+    </div>
+  );
+}
 
 // ─── Welcome Screen ───────────────────────────────────────────────────────────
 
 function WelcomeScreen({ onStart }: { onStart: () => void }) {
   const [currentItem, setCurrentItem] = useState(TRAINING_ITEMS[0]);
-  const [robotPos, setRobotPos] = useState({ x: 50, y: 20 });
-  const [trashPos, setTrashPos] = useState({ x: 50, y: 65 });
+  const [robotPos, setRobotPos] = useState({ x: 50, y: 30 });
+  const [trashPos, setTrashPos] = useState({ x: 80, y: 78 });
   const [trashOpacity, setTrashOpacity] = useState(0);
   const [hasTrash, setHasTrash] = useState(false);
   const [binShake, setBinShake] = useState<string | null>(null);
@@ -129,18 +156,18 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
     let active = true;
     const playAnim = async () => {
       while (active) {
-        // 1. Spawn trash
+        // 1. Spawn trash on the right floor
         const item = TRAINING_ITEMS[Math.floor(Math.random() * TRAINING_ITEMS.length)];
         setCurrentItem(item);
         setHasTrash(false);
-        setTrashPos({ x: 50, y: 65 });
+        setTrashPos({ x: 85, y: 78 });
         setTrashOpacity(1);
-        setRobotPos({ x: 50, y: 20 });
+        setRobotPos({ x: 50, y: 30 });
         await new Promise(r => setTimeout(r, 800));
         if (!active) break;
 
         // 2. Move robot to trash
-        setRobotPos({ x: 50, y: 60 });
+        setRobotPos({ x: 85, y: 70 });
         await new Promise(r => setTimeout(r, 600));
         if (!active) break;
 
@@ -153,13 +180,13 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         let targetX = 50;
         if (item.category === "organik") targetX = 18;
         if (item.category === "logam") targetX = 82;
-        setRobotPos({ x: targetX, y: 35 });
+        setRobotPos({ x: targetX, y: 40 });
         await new Promise(r => setTimeout(r, 700));
         if (!active) break;
 
         // 5. Drop trash
         setHasTrash(false);
-        setTrashPos({ x: targetX, y: 25 });
+        setTrashPos({ x: targetX, y: 55 });
         setTrashOpacity(0);
         setBinShake(item.category);
         await new Promise(r => setTimeout(r, 400));
@@ -167,7 +194,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         if (!active) break;
 
         // 6. Return to start
-        setRobotPos({ x: 50, y: 20 });
+        setRobotPos({ x: 50, y: 30 });
         await new Promise(r => setTimeout(r, 800));
       }
     };
@@ -189,20 +216,20 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         zIndex: 0,
       }}>
         {/* Bins */}
-        <div style={{ position: "absolute", bottom: "10%", left: "18%", transform: "translateX(-50%)", textAlign: "center" }}
+        <div style={{ position: "absolute", bottom: "5%", left: "18%", transform: "translateX(-50%)", textAlign: "center" }}
              className={binShake === "organik" ? "bin-shake" : ""}>
-          <div style={{ fontSize: 48 }}>🌿</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#15803d", background: "#dcfce7", padding: "2px 8px", borderRadius: 12, marginTop: 4 }}>Organik</div>
+          <BinGraphic color="#4ade80" border="#166534" icon="🌿" />
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#166534", background: "#dcfce7", padding: "4px 10px", borderRadius: 12, marginTop: 4, border: "2px solid #166534" }}>Organik</div>
         </div>
-        <div style={{ position: "absolute", bottom: "10%", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}
+        <div style={{ position: "absolute", bottom: "5%", left: "50%", transform: "translateX(-50%)", textAlign: "center" }}
              className={binShake === "plastik" ? "bin-shake" : ""}>
-          <div style={{ fontSize: 48 }}>♻️</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#1d4ed8", background: "#dbeafe", padding: "2px 8px", borderRadius: 12, marginTop: 4 }}>Plastik</div>
+          <BinGraphic color="#60a5fa" border="#1e3a8a" icon="♻️" />
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#1e3a8a", background: "#dbeafe", padding: "4px 10px", borderRadius: 12, marginTop: 4, border: "2px solid #1e3a8a" }}>Plastik</div>
         </div>
-        <div style={{ position: "absolute", bottom: "10%", left: "82%", transform: "translateX(-50%)", textAlign: "center" }}
+        <div style={{ position: "absolute", bottom: "5%", left: "82%", transform: "translateX(-50%)", textAlign: "center" }}
              className={binShake === "logam" ? "bin-shake" : ""}>
-          <div style={{ fontSize: 48 }}>⚙️</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#b45309", background: "#fef3c7", padding: "2px 8px", borderRadius: 12, marginTop: 4 }}>Logam</div>
+          <BinGraphic color="#fbbf24" border="#92400e" icon="⚙️" />
+          <div style={{ fontSize: 13, fontWeight: 800, color: "#92400e", background: "#fef3c7", padding: "4px 10px", borderRadius: 12, marginTop: 4, border: "2px solid #92400e" }}>Logam</div>
         </div>
 
         {/* Robot */}
@@ -342,64 +369,81 @@ function GameButton({ onClick, disabled = false, children, variant = "primary" }
 type LabeledItem = typeof TRAINING_ITEMS[0] & { chosen: string; correct: boolean };
 
 function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score: number) => void }) {
-  const [queue]       = useState(() => shuffle(TRAINING_ITEMS));
-  const [idx, setIdx] = useState(0);
+  const [queue, setQueue]             = useState(() => shuffle(TRAINING_ITEMS));
   const [labeled, setLabeled]         = useState<LabeledItem[]>([]);
   const [feedback, setFeedback]       = useState<{ correct: boolean } | null>(null);
   const [highlight, setHighlight]     = useState<string | null>(null);
   const [score, setScore]             = useState(0);
-  const [animKey, setAnimKey]         = useState(0);
+  
+  const [animatingItem, setAnimatingItem] = useState<{ item: LabeledItem, targetCat: string, correct: boolean } | null>(null);
+  const [isFlying, setIsFlying]       = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const current = queue[idx];
+  const current = queue[0];
   const progress = Math.min(100, Math.round(labeled.length / MIN_LABELS * 100));
   const canProceed = labeled.length >= MIN_LABELS;
 
   function pickBin(categoryId: string) {
-    if (!current || feedback) return;
+    if (!current || feedback || animatingItem) return;
     const correct = current.category === categoryId;
-    if (correct) setScore(s => s + 10);
-    setFeedback({ correct });
-    setLabeled(prev => [...prev, { ...current, chosen: categoryId, correct }]);
-    setHighlight(null);
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setFeedback(null);
-      setIdx(i => i + 1);
-      setAnimKey(k => k + 1);
-    }, 900);
+    
+    // Set item to animate
+    const targetItem = { ...current, chosen: categoryId, correct };
+    setAnimatingItem({ item: targetItem, targetCat: categoryId, correct });
+    
+    setTimeout(() => {
+      setIsFlying(true); // Trigger CSS transform
+      
+      setTimeout(() => {
+        // Impact! Calculate score
+        if (correct) setScore(s => s + 10);
+        setFeedback({ correct });
+        setLabeled(prev => [...prev, targetItem]);
+        
+        // Remove from queue
+        setQueue(q => q.slice(1));
+      }, 400);
+
+      setTimeout(() => {
+        // Reset after animation ends
+        setAnimatingItem(null);
+        setIsFlying(false);
+        setFeedback(null);
+      }, 1000);
+    }, 20); // Small delay to let React render the animatingItem before transforming
   }
 
   const correctCount = labeled.filter(d => d.correct).length;
+  
+  // Animation coordinates for the flying trash
+  const flyAnimationStyles: Record<string, React.CSSProperties> = {
+    organik: { transform: "translate(-120px, 150px) scale(0.3) rotate(-360deg)", opacity: 0 },
+    plastik: { transform: "translate(0px, 150px) scale(0.3) rotate(360deg)", opacity: 0 },
+    logam: { transform: "translate(120px, 150px) scale(0.3) rotate(720deg)", opacity: 0 },
+  };
 
   return (
-    <div className="fade-up">
+    <div className="fade-up" style={{ position: "relative" }}>
       {/* Score bar */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         background: "linear-gradient(135deg, #1e3a5f, #1e40af)",
         borderRadius: 14, padding: "12px 18px", marginBottom: 16,
-        boxShadow: "0 4px 14px rgba(30,64,175,0.3)",
+        border: "3px solid #1e3a8a",
+        boxShadow: "0 6px 0 #172554, 0 8px 16px rgba(30,64,175,0.4)",
       }}>
         <div>
-          <div style={{ color: "#93c5fd", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>SKOR</div>
-          <div style={{ color: "#fff", fontSize: 26, fontWeight: 800, lineHeight: 1 }}>{score}</div>
+          <div style={{ color: "#93c5fd", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>SKOR</div>
+          <div style={{ color: "#fff", fontSize: 26, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 0 #1e3a8a" }}>{score}</div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#93c5fd", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>BENAR</div>
-          <div style={{ color: "#fff", fontSize: 26, fontWeight: 800, lineHeight: 1 }}>{correctCount}/{labeled.length}</div>
+          <div style={{ color: "#93c5fd", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>BENAR</div>
+          <div style={{ color: "#fff", fontSize: 26, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 0 #1e3a8a" }}>{correctCount}/{labeled.length}</div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ color: "#93c5fd", fontSize: 10, fontWeight: 700, letterSpacing: 1 }}>TERSISA</div>
-          <div style={{ color: "#fff", fontSize: 26, fontWeight: 800, lineHeight: 1 }}>{Math.max(0, queue.length - idx)}</div>
+          <div style={{ color: "#93c5fd", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>SISA</div>
+          <div style={{ color: "#fff", fontSize: 26, fontWeight: 900, lineHeight: 1, textShadow: "0 2px 0 #1e3a8a" }}>{queue.length}</div>
         </div>
-      </div>
-
-      {/* Info card */}
-      <div style={{ background: "#fffbeb", border: "2px solid #fcd34d", borderRadius: 14, padding: "12px 16px", marginBottom: 16 }}>
-        <p style={{ fontSize: 13, color: "#78350f", margin: 0 }}>
-          💡 <strong>Apa ini?</strong> Kamu sedang membuat <em>training data</em> — mengajarkan AI dengan memberi contoh berlabel!
-        </p>
       </div>
 
       {/* Progress */}
@@ -408,60 +452,107 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
           label={labeled.length < MIN_LABELS ? `${labeled.length}/${MIN_LABELS} data — butuh ${MIN_LABELS - labeled.length} lagi untuk lanjut` : `✅ ${labeled.length} data siap — boleh lanjut kapan saja!`} />
       </div>
 
-      {/* Trash card */}
-      {current && idx < queue.length ? (
-        <>
-          <div key={animKey} className="bounce-in" style={{
-            textAlign: "center", padding: "28px 16px",
-            background: "linear-gradient(135deg, #f8fafc, #f1f5f9)",
-            borderRadius: 20, marginBottom: 16,
-            border: "2px solid #e2e8f0",
-            boxShadow: "0 6px 20px rgba(0,0,0,0.07)",
-            position: "relative",
-            animation: feedback
-              ? (feedback.correct ? "popCorrect 0.5s ease" : "shakeWrong 0.4s ease")
-              : undefined,
+      {/* Game Arena */}
+      {queue.length > 0 || animatingItem ? (
+        <div style={{ position: "relative" }}>
+          <div style={{
+            background: "linear-gradient(180deg, #e0f2fe 0%, #bae6fd 60%, #7dd3fc 100%)",
+            borderRadius: 24, marginBottom: 20, border: "4px solid #38bdf8",
+            boxShadow: "inset 0 4px 12px rgba(0,0,0,0.1), 0 8px 0 #0ea5e9, 0 12px 24px rgba(14,165,233,0.3)",
+            position: "relative", padding: "20px 10px 10px",
+            height: 220, display: "flex", flexDirection: "column", justifyContent: "flex-end",
+            zIndex: 1,
           }}>
+            {/* Belt / Ground */}
+            <div style={{ position: "absolute", bottom: 20, left: 0, right: 0, height: 28, background: "#94a3b8", borderTop: "4px solid #64748b", borderBottom: "4px solid #475569", overflow: "hidden" }}>
+               <div style={{ width: "200%", height: "100%", background: "repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.2) 20px, rgba(0,0,0,0.2) 40px)", animation: "conveyor 1s linear infinite" }} />
+            </div>
+
+            <div style={{ display: "flex", alignItems: "flex-end", position: "relative", zIndex: 5, paddingBottom: 16, paddingLeft: 20 }}>
+              {/* Robot */}
+              <div style={{ fontSize: 72, marginRight: 24, animation: "float 3s ease-in-out infinite", transformOrigin: "bottom center", filter: "drop-shadow(0 8px 4px rgba(0,0,0,0.2))" }}>
+                🤖
+              </div>
+              
+              {/* Queue */}
+              <div style={{ display: "flex", gap: 16, transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
+                 {queue.slice(0, 5).map((item, i) => (
+                    <div key={item.id} style={{ 
+                      fontSize: 56, 
+                      filter: i === 0 && !animatingItem ? "drop-shadow(0 6px 12px rgba(255,255,255,0.8))" : "drop-shadow(0 4px 6px rgba(0,0,0,0.2))",
+                      transform: i === 0 && !animatingItem ? "scale(1.1) translateY(-10px)" : "scale(0.9)",
+                      opacity: animatingItem && i === 0 ? 0 : 1 - (i * 0.2),
+                      transition: "all 0.4s cubic-bezier(0.34,1.56,0.64,1)"
+                    }}>
+                      {item.icon}
+                    </div>
+                 ))}
+              </div>
+            </div>
+
+            {/* Info Panel for current item */}
+            {current && !animatingItem && (
+               <div className="fade-up" style={{
+                 position: "absolute", top: 16, right: 16, background: "rgba(255,255,255,0.95)", padding: "10px 16px",
+                 borderRadius: 16, border: "3px solid #e2e8f0", boxShadow: "0 6px 16px rgba(0,0,0,0.15)",
+                 maxWidth: "50%", textAlign: "right"
+               }}>
+                 <div style={{ fontSize: 18, fontWeight: 900, color: "#1e293b", marginBottom: 2 }}>{current.name}</div>
+                 <div style={{ fontSize: 12, color: "#64748b", fontWeight: 700 }}>{current.desc}</div>
+               </div>
+            )}
+
+            {/* Feedback Badge */}
             {feedback && (
-              <div className="fade-up" style={{
-                position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)",
-                padding: "5px 16px", borderRadius: 999, fontSize: 13, fontWeight: 700,
+              <div className="bounce-in" style={{
+                position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                padding: "8px 24px", borderRadius: 999, fontSize: 16, fontWeight: 900,
                 background: feedback.correct ? "#bbf7d0" : "#fecaca",
                 color: feedback.correct ? "#15803d" : "#dc2626",
-                border: `2px solid ${feedback.correct ? "#4ade80" : "#f87171"}`,
-                whiteSpace: "nowrap", zIndex: 2,
+                border: `4px solid ${feedback.correct ? "#4ade80" : "#f87171"}`,
+                boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+                zIndex: 20, whiteSpace: "nowrap"
               }}>
-                {feedback.correct ? "✅ Benar! +10 poin" : "❌ Salah — tapi AI tetap belajar!"}
+                {feedback.correct ? "✅ Benar! +10" : "❌ Salah!"}
               </div>
             )}
-            <div className="floating" style={{ fontSize: 72, lineHeight: 1, marginBottom: 10 }}>{current.icon}</div>
-            <p style={{ fontSize: 20, fontWeight: 800, margin: "0 0 4px", color: "#1e293b" }}>{current.name}</p>
-            <p style={{ fontSize: 13, color: "#64748b", margin: "0 0 12px" }}>{current.desc}</p>
-            <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>👇 Masukkan ke tempat sampah yang benar</p>
           </div>
 
+          {/* Flying Item Overlay */}
+          {animatingItem && (
+             <div style={{
+               position: "absolute", fontSize: 56, zIndex: 100,
+               top: 100, left: 120, // Start relative to the Robot
+               transition: "all 0.4s cubic-bezier(0.55, 0.085, 0.68, 0.53)", // ease-in for throwing
+               ...(isFlying ? flyAnimationStyles[animatingItem.targetCat] : {})
+             }}>
+               {animatingItem.item.icon}
+             </div>
+          )}
+
           {/* Bins */}
-          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 16, position: "relative", zIndex: 10 }}>
             {CATEGORIES.map(cat => (
               <button key={cat.id} className="bin-btn"
                 onClick={() => pickBin(cat.id)}
                 onMouseEnter={() => setHighlight(cat.id)}
                 onMouseLeave={() => setHighlight(null)}
                 style={{
-                  flex: 1, padding: "18px 8px", borderRadius: 18, border: "none",
+                  flex: 1, padding: "16px 4px", borderRadius: 20, border: "none",
                   background: highlight === cat.id
                     ? `linear-gradient(135deg, ${cat.accent}50, ${cat.bg})`
                     : "#f8fafc",
-                  outline: `3px solid ${highlight === cat.id ? cat.border : "#e2e8f0"}`,
-                  display: "flex", flexDirection: "column", alignItems: "center", gap: 6,
-                  boxShadow: highlight === cat.id ? `0 8px 24px ${cat.accent}50` : "0 2px 8px rgba(0,0,0,0.06)",
+                  outline: `4px solid ${highlight === cat.id ? cat.border : "#cbd5e1"}`,
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
+                  boxShadow: highlight === cat.id ? `0 8px 0 ${cat.border}, 0 16px 30px ${cat.accent}60` : "0 6px 0 #94a3b8, 0 8px 12px rgba(0,0,0,0.1)",
+                  transform: highlight === cat.id ? "translateY(-4px)" : "none",
                 }}>
-                <div style={{ fontSize: 30 }}>{cat.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: cat.color }}>{cat.label}</div>
+                <BinGraphic color={cat.bg} border={cat.border} icon={cat.icon} />
+                <div style={{ fontSize: 15, fontWeight: 900, color: cat.color }}>{cat.label}</div>
               </button>
             ))}
           </div>
-        </>
+        </div>
       ) : (
         <div style={{ textAlign: "center", padding: "32px", background: "#f0fdf4", borderRadius: 20, border: "2px solid #4ade80", marginBottom: 16 }}>
           <div style={{ fontSize: 52, marginBottom: 8 }}>🎉</div>
