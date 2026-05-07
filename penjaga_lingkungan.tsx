@@ -77,15 +77,246 @@ const GAME_CSS = `
     0%, 100% { transform: scale(1); }
     50%      { transform: scale(1.08); }
   }
-  .bounce-in { animation: bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
-  .fade-up   { animation: fadeUp 0.35s ease both; }
-  .floating  { animation: float 3s ease-in-out infinite; }
-  .bin-btn   { transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease !important; cursor: pointer !important; }
+  @keyframes cloudDrift {
+    0%   { transform: translateX(-10px); }
+    50%  { transform: translateX(10px); }
+    100% { transform: translateX(-10px); }
+  }
+  @keyframes truckRoll {
+    0%   { transform: translateX(-120px); }
+    100% { transform: translateX(620px); }
+  }
+  @keyframes titlePop {
+    0%   { opacity: 0; transform: scale(0.7) translateY(20px); }
+    70%  { transform: scale(1.06) translateY(-4px); opacity: 1; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  @keyframes subtitleSlide {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes btnBounce {
+    0%   { opacity: 0; transform: scale(0.8) translateY(12px); }
+    70%  { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes leafSway {
+    0%,100% { transform: rotate(-8deg); }
+    50%      { transform: rotate(8deg); }
+  }
+  @keyframes birdFly {
+    0%   { transform: translateX(0) translateY(0); }
+    25%  { transform: translateX(12px) translateY(-6px); }
+    50%  { transform: translateX(24px) translateY(0); }
+    75%  { transform: translateX(12px) translateY(4px); }
+    100% { transform: translateX(0) translateY(0); }
+  }
+  .bounce-in  { animation: bounceIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+  .fade-up    { animation: fadeUp 0.35s ease both; }
+  .floating   { animation: float 3s ease-in-out infinite; }
+  .bin-btn    { transition: transform 0.15s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.15s ease !important; cursor: pointer !important; }
   .bin-btn:hover { transform: scale(1.1) translateY(-4px) !important; box-shadow: 0 10px 28px rgba(0,0,0,0.18) !important; }
-  .game-btn  { transition: all 0.15s ease; cursor: pointer; }
+  .game-btn   { transition: all 0.15s ease; cursor: pointer; }
   .game-btn:hover  { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
   .game-btn:active { transform: translateY(0); }
+  .welcome-title    { animation: titlePop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.2s both; }
+  .welcome-subtitle { animation: subtitleSlide 0.5s ease 0.7s both; }
+  .welcome-btn      { animation: btnBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) 1s both; }
+  .welcome-btn:hover { transform: scale(1.06) translateY(-3px) !important; box-shadow: 0 10px 32px rgba(52,211,153,0.55) !important; }
+  .welcome-btn:active { transform: scale(0.97) !important; }
+  .cloud1 { animation: cloudDrift 7s ease-in-out infinite; }
+  .cloud2 { animation: cloudDrift 9s ease-in-out 2s infinite; }
+  .truck  { animation: truckRoll 6s linear infinite; }
+  .leaf1  { animation: leafSway 3s ease-in-out infinite; transform-origin: bottom center; }
+  .leaf2  { animation: leafSway 3.5s ease-in-out 0.5s infinite; transform-origin: bottom center; }
+  .bird   { animation: birdFly 4s ease-in-out infinite; }
 `;
+
+// ─── Welcome Screen ───────────────────────────────────────────────────────────
+
+function WelcomeScreen({ onStart }: { onStart: () => void }) {
+  return (
+    <div style={{
+      minHeight: "100dvh", display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      background: "linear-gradient(180deg, #bfefff 0%, #e0f7d4 60%, #c8e6c9 100%)",
+      padding: "0", margin: "0", overflow: "hidden", position: "relative",
+    }}>
+
+      {/* Sky decorations */}
+      <svg className="cloud1" style={{ position: "absolute", top: 28, left: "8%", opacity: 0.9 }} width="90" height="36" viewBox="0 0 90 36">
+        <ellipse cx="45" cy="26" rx="42" ry="14" fill="white" />
+        <ellipse cx="28" cy="20" rx="20" ry="16" fill="white" />
+        <ellipse cx="62" cy="18" rx="18" ry="14" fill="white" />
+      </svg>
+      <svg className="cloud2" style={{ position: "absolute", top: 16, right: "10%", opacity: 0.75 }} width="70" height="28" viewBox="0 0 70 28">
+        <ellipse cx="35" cy="20" rx="32" ry="10" fill="white" />
+        <ellipse cx="22" cy="15" rx="16" ry="12" fill="white" />
+        <ellipse cx="50" cy="13" rx="14" ry="11" fill="white" />
+      </svg>
+
+      {/* Birds */}
+      <svg className="bird" style={{ position: "absolute", top: 60, left: "30%" }} width="32" height="14" viewBox="0 0 32 14">
+        <path d="M0 8 Q8 0 16 8 Q24 0 32 8" stroke="#555" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
+      </svg>
+
+      {/* Sun */}
+      <svg style={{ position: "absolute", top: 20, right: "22%" }} width="48" height="48" viewBox="0 0 48 48">
+        <circle cx="24" cy="24" r="12" fill="#FFD700" />
+        {[0,45,90,135,180,225,270,315].map(a => (
+          <line key={a}
+            x1={24 + 14 * Math.cos(a * Math.PI/180)}
+            y1={24 + 14 * Math.sin(a * Math.PI/180)}
+            x2={24 + 20 * Math.cos(a * Math.PI/180)}
+            y2={24 + 20 * Math.sin(a * Math.PI/180)}
+            stroke="#FFD700" strokeWidth="2.5" strokeLinecap="round" />
+        ))}
+      </svg>
+
+      {/* Scene illustration */}
+      <div style={{ width: "100%", maxWidth: 520, padding: "0 16px", marginBottom: 0 }}>
+        <svg viewBox="0 0 520 200" width="100%" style={{ display: "block", overflow: "visible" }}>
+
+          {/* Ground */}
+          <rect x="0" y="158" width="520" height="42" fill="#7CB87B" />
+          {/* Road */}
+          <rect x="0" y="164" width="520" height="28" fill="#90A4AE" />
+          {/* Road dashes */}
+          {[0,60,120,180,240,300,360,420,480].map(x => (
+            <rect key={x} x={x+8} y="176" width="36" height="5" rx="2" fill="#CFD8DC" opacity="0.8" />
+          ))}
+          {/* Sidewalk */}
+          <rect x="0" y="157" width="520" height="8" fill="#B0BEC5" />
+
+          {/* House 1 (left, green roof) */}
+          <rect x="18" y="90" width="72" height="68" rx="4" fill="#FFECB3" />
+          <polygon points="10,92 54,50 98,92" fill="#66BB6A" />
+          <rect x="36" y="120" width="22" height="38" rx="3" fill="#8D6E63" />
+          <rect x="60" y="100" width="18" height="16" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          <rect x="24" y="100" width="18" height="16" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          {/* flower box */}
+          <rect x="60" y="115" width="18" height="5" rx="2" fill="#8D6E63"/>
+          <circle cx="64" cy="113" r="3" fill="#FF7043"/>
+          <circle cx="70" cy="112" r="3" fill="#EC407A"/>
+          <circle cx="76" cy="113" r="3" fill="#FFCA28"/>
+
+          {/* House 2 (mid-left, pink) */}
+          <rect x="118" y="80" width="80" height="78" rx="4" fill="#FCE4EC" />
+          <polygon points="110,82 158,38 206,82" fill="#EF5350" />
+          <rect x="148" y="118" width="24" height="40" rx="3" fill="#6D4C41" />
+          <rect x="122" y="96" width="22" height="18" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          <rect x="154" y="96" width="22" height="18" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          <rect x="180" y="96" width="14" height="18" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          {/* chimney */}
+          <rect x="183" y="50" width="10" height="22" rx="2" fill="#BCAAA4"/>
+          <ellipse cx="188" cy="48" rx="8" ry="4" fill="#8D6E63"/>
+
+          {/* Tree 1 between house 2 and 3 */}
+          <rect x="214" y="120" width="8" height="38" rx="3" fill="#8D6E63" />
+          <ellipse className="leaf1" cx="218" cy="112" rx="18" ry="20" fill="#43A047" />
+          <ellipse cx="210" cy="118" rx="12" ry="14" fill="#388E3C" />
+          <ellipse cx="226" cy="116" rx="12" ry="15" fill="#2E7D32" />
+
+          {/* House 3 (mid-right, blue) */}
+          <rect x="248" y="85" width="78" height="73" rx="4" fill="#E3F2FD" />
+          <polygon points="240,87 287,44 334,87" fill="#1E88E5" />
+          <rect x="276" y="122" width="22" height="36" rx="3" fill="#795548" />
+          <rect x="252" y="100" width="20" height="18" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          <rect x="306" y="100" width="16" height="18" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          {/* balcony */}
+          <rect x="252" y="118" width="20" height="4" rx="1" fill="#90CAF9"/>
+          <rect x="253" y="106" width="2" height="12" fill="#90CAF9"/>
+          <rect x="258" y="106" width="2" height="12" fill="#90CAF9"/>
+          <rect x="263" y="106" width="2" height="12" fill="#90CAF9"/>
+          <rect x="268" y="106" width="2" height="12" fill="#90CAF9"/>
+
+          {/* Trash bins on sidewalk */}
+          <rect x="340" y="138" width="16" height="20" rx="3" fill="#66BB6A" />
+          <rect x="338" y="135" width="20" height="5" rx="2" fill="#388E3C" />
+          <rect x="345" y="140" width="2" height="14" fill="#2E7D32" opacity="0.5" />
+          <rect x="360" y="140" width="15" height="18" rx="3" fill="#42A5F5" />
+          <rect x="358" y="137" width="19" height="5" rx="2" fill="#1E88E5" />
+          <rect x="365" y="142" width="2" height="13" fill="#1565C0" opacity="0.5" />
+          <rect x="379" y="141" width="14" height="17" rx="3" fill="#FFA726" />
+          <rect x="377" y="138" width="18" height="5" rx="2" fill="#F57C00" />
+
+          {/* Tree 2 (right) */}
+          <rect x="408" y="122" width="8" height="36" rx="3" fill="#8D6E63" />
+          <ellipse className="leaf2" cx="412" cy="114" rx="20" ry="22" fill="#43A047" />
+          <ellipse cx="402" cy="120" rx="14" ry="16" fill="#388E3C" />
+          <ellipse cx="422" cy="118" rx="13" ry="15" fill="#2E7D32" />
+
+          {/* House 4 (far right, yellow) */}
+          <rect x="440" y="92" width="68" height="66" rx="4" fill="#FFF9C4" />
+          <polygon points="432,94 474,56 516,94" fill="#FBC02D" />
+          <rect x="456" y="122" width="20" height="36" rx="3" fill="#795548" />
+          <rect x="444" y="104" width="18" height="16" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+          <rect x="482" y="104" width="18" height="16" rx="2" fill="#81D4FA" stroke="white" strokeWidth="1.5"/>
+
+          {/* Animated garbage truck */}
+          <g className="truck">
+            <rect x="0" y="138" width="72" height="28" rx="5" fill="#4CAF50" />
+            <rect x="44" y="130" width="28" height="18" rx="4" fill="#388E3C" />
+            <rect x="48" y="133" width="18" height="10" rx="2" fill="#B2DFDB" opacity="0.8"/>
+            <circle cx="14" cy="167" r="7" fill="#37474F" />
+            <circle cx="14" cy="167" r="3.5" fill="#78909C" />
+            <circle cx="58" cy="167" r="7" fill="#37474F" />
+            <circle cx="58" cy="167" r="3.5" fill="#78909C" />
+            <text x="8" y="152" fontSize="9" fill="white" fontWeight="bold">♻️</text>
+          </g>
+
+        </svg>
+      </div>
+
+      {/* Text + button card */}
+      <div style={{
+        background: "rgba(255,255,255,0.72)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderRadius: 28,
+        padding: "28px 32px 32px",
+        maxWidth: 400,
+        width: "calc(100% - 40px)",
+        textAlign: "center",
+        boxShadow: "0 8px 40px rgba(52,211,153,0.18), 0 2px 12px rgba(0,0,0,0.08)",
+        border: "2px solid rgba(255,255,255,0.8)",
+        marginTop: -10,
+      }}>
+        <div style={{ fontSize: 52, marginBottom: 4, lineHeight: 1 }}>🗑️</div>
+        <h1 className="welcome-title" style={{
+          fontSize: 38, fontWeight: 900, margin: "0 0 6px",
+          background: "linear-gradient(135deg, #059669, #10b981, #34d399)",
+          WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+          letterSpacing: "-1px", lineHeight: 1.1,
+        }}>Pilah Sampah</h1>
+        <p className="welcome-subtitle" style={{
+          fontSize: 15, color: "#475569", margin: "0 0 28px",
+          fontWeight: 500, lineHeight: 1.5,
+        }}>
+          Latih AI untuk bisa memilah<br/>sampah sendiri! ♻️🌿
+        </p>
+        <button
+          className="welcome-btn game-btn"
+          onClick={onStart}
+          style={{
+            width: "100%", padding: "16px 24px",
+            borderRadius: 18, border: "none",
+            fontWeight: 800, fontSize: 18,
+            background: "linear-gradient(135deg, #10b981, #059669)",
+            color: "#fff",
+            boxShadow: "0 6px 24px rgba(16,185,129,0.45)",
+            letterSpacing: "0.3px",
+            cursor: "pointer",
+            transition: "all 0.18s cubic-bezier(0.34,1.56,0.64,1)",
+          }}
+        >
+          🌟 Mulai!
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 
@@ -590,10 +821,10 @@ function ResultsStage({ results, totalScore, onReplay }: { results: PredictionIt
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
-type Stage = 1 | 2 | 3 | 4;
+type Stage = 0 | 1 | 2 | 3 | 4;
 
 export default function App() {
-  const [stage, setStage]         = useState<Stage>(1);
+  const [stage, setStage]         = useState<Stage>(0);
   const [labeled, setLabeled]     = useState<LabeledItem[]>([]);
   const [labelScore, setLabelScore] = useState(0);
   const [testResults, setTestResults] = useState<PredictionItem[]>([]);
@@ -616,7 +847,7 @@ export default function App() {
   }
 
   function handleReplay() {
-    setStage(1);
+    setStage(0);
     setLabeled([]);
     setLabelScore(0);
     setTestResults([]);
@@ -624,6 +855,15 @@ export default function App() {
   }
 
   const accuracy = calcAccuracy(labeled);
+
+  if (stage === 0) {
+    return (
+      <>
+        <style>{GAME_CSS}</style>
+        <WelcomeScreen onStart={() => setStage(1)} />
+      </>
+    );
+  }
 
   return (
     <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", maxWidth: 600, margin: "0 auto", padding: "1rem" }}>
