@@ -189,23 +189,30 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
     let active = true;
     const playAnim = async () => {
       while (active) {
+        // Move robot to center
+        setRobotPos({ x: 50, y: 65 });
+        setHasTrash(false);
+        await new Promise(r => setTimeout(r, 400));
+        if (!active) break;
+
+        // Spawn trash from above
         const item = TRAINING_ITEMS[Math.floor(Math.random() * TRAINING_ITEMS.length)];
         setCurrentItem(item);
-        setHasTrash(false);
-        setTrashPos({ x: 85, y: 78 });
+        setTrashPos({ x: 50, y: -20 });
         setTrashOpacity(1);
-        setRobotPos({ x: 50, y: 30 });
-        await new Promise(r => setTimeout(r, 800));
+        
+        // Wait a tiny bit then animate falling
+        await new Promise(r => setTimeout(r, 50));
+        setTrashPos({ x: 50, y: 55 });
+        await new Promise(r => setTimeout(r, 500)); // Fall duration
         if (!active) break;
 
-        setRobotPos({ x: 85, y: 70 });
-        await new Promise(r => setTimeout(r, 600));
-        if (!active) break;
-
+        // Robot catches trash
         setHasTrash(true);
         await new Promise(r => setTimeout(r, 300));
         if (!active) break;
 
+        // Move to bin
         let targetX = 50;
         if (item.category === "organik") targetX = 18;
         if (item.category === "logam") targetX = 82;
@@ -213,6 +220,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         await new Promise(r => setTimeout(r, 700));
         if (!active) break;
 
+        // Drop trash into bin
         setHasTrash(false);
         setTrashPos({ x: targetX, y: 55 });
         setTrashOpacity(0);
@@ -221,8 +229,8 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
         setBinShake(null);
         if (!active) break;
 
-        setRobotPos({ x: 50, y: 30 });
-        await new Promise(r => setTimeout(r, 800));
+        // Delay before next cycle
+        await new Promise(r => setTimeout(r, 600));
       }
     };
     playAnim();
@@ -307,7 +315,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
           Latih AI untuk memilah<br/>sampah secara otomatis!
         </p>
         <button className="neon-btn" onClick={onStart} style={{ width: "100%" }}>
-          [ SYSTEM START ]
+          [ MULAI SISTEM ]
         </button>
       </div>
     </div>
@@ -317,7 +325,7 @@ function WelcomeScreen({ onStart }: { onStart: () => void }) {
 // ─── Shared UI ────────────────────────────────────────────────────────────────
 
 function StepIndicator({ step }: { step: number }) {
-  const steps = ["LABELING", "TRAINING", "TESTING"];
+  const steps = ["PELABELAN", "PELATIHAN", "PENGUJIAN"];
   return (
     <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
       {steps.map((label, i) => {
@@ -433,21 +441,21 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
         marginBottom: 16, borderBottom: "2px solid #1e293b", paddingBottom: 12
       }}>
         <div>
-          <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>SCORE</div>
+          <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>SKOR</div>
           <div style={{ color: "#00D4FF", fontSize: 26, fontWeight: 900, lineHeight: 1, textShadow: "0 0 10px rgba(0,212,255,0.5)" }}>{score}</div>
         </div>
         <div style={{ textAlign: "center" }}>
-          <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>ACCURACY</div>
+          <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>AKURASI</div>
           <div style={{ color: "#00FF41", fontSize: 26, fontWeight: 900, lineHeight: 1, textShadow: "0 0 10px rgba(0,255,65,0.5)" }}>{correctCount}/{labeled.length}</div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>REMAINING</div>
+          <div style={{ color: "#94a3b8", fontSize: 10, fontWeight: 800, letterSpacing: 1 }}>TERSISA</div>
           <div style={{ color: "#fff", fontSize: 26, fontWeight: 900, lineHeight: 1 }}>{queue.length}</div>
         </div>
       </div>
 
       <div style={{ marginBottom: 20 }}>
-        <NeonProgressBar pct={progress} label={labeled.length < MIN_LABELS ? `SYS: ${labeled.length}/${MIN_LABELS} DATA REQUIRED` : `SYS: ${labeled.length} DATA READY`} />
+        <NeonProgressBar pct={progress} label={labeled.length < MIN_LABELS ? `SYS: BUTUH ${labeled.length}/${MIN_LABELS} DATA` : `SYS: ${labeled.length} DATA SIAP`} />
       </div>
 
       {queue.length > 0 || animatingItem ? (
@@ -472,29 +480,33 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
               <div style={{ display: "flex", gap: 16, transition: "transform 0.4s cubic-bezier(0.34,1.56,0.64,1)" }}>
                  {queue.slice(0, 5).map((item, i) => (
                     <div key={item.id} style={{ 
-                      fontSize: 56, 
+                      fontSize: 56, position: "relative",
                       filter: i === 0 && !animatingItem ? "drop-shadow(0 0 15px rgba(255,255,255,0.6))" : "drop-shadow(0 4px 6px rgba(0,0,0,0.5))",
                       transform: i === 0 && !animatingItem ? "scale(1.1) translateY(-10px)" : "scale(0.9)",
                       opacity: animatingItem && i === 0 ? 0 : 1 - (i * 0.2),
                       transition: "all 0.4s cubic-bezier(0.34,1.56,0.64,1)"
                     }}>
+                      {/* Chat Bubble for the first item */}
+                      {i === 0 && !animatingItem && (
+                         <div className="fade-up" style={{
+                           position: "absolute", bottom: "110%", left: "50%", transform: "translateX(-50%)",
+                           background: "rgba(15,20,25,0.9)", border: "2px solid #00D4FF", borderRadius: 12,
+                           padding: "8px 12px", whiteSpace: "nowrap", zIndex: 20,
+                           boxShadow: "0 0 15px rgba(0,212,255,0.4)"
+                         }}>
+                           <div style={{ fontSize: 16, fontWeight: 900, color: "#fff", marginBottom: 2 }}>{item.name}</div>
+                           <div style={{ fontSize: 10, color: "#00D4FF", fontWeight: 700 }}>{item.desc}</div>
+                           {/* Bubble tail */}
+                           <div style={{ position: "absolute", bottom: -6, left: "50%", transform: "translateX(-50%) rotate(45deg)", width: 10, height: 10, background: "rgba(15,20,25,0.9)", borderBottom: "2px solid #00D4FF", borderRight: "2px solid #00D4FF" }} />
+                         </div>
+                      )}
                       {item.icon}
                     </div>
                  ))}
               </div>
             </div>
 
-            {/* Target Info */}
-            {current && !animatingItem && (
-               <div className="fade-up" style={{
-                 position: "absolute", top: 16, right: 16, background: "rgba(15,20,25,0.8)", padding: "10px 16px",
-                 borderRadius: 12, border: "2px solid #334155",
-                 maxWidth: "55%", textAlign: "right"
-               }}>
-                 <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 2 }}>{current.name}</div>
-                 <div style={{ fontSize: 12, color: "#00D4FF", fontWeight: 700 }}>{current.desc}</div>
-               </div>
-            )}
+            {/* Target Info (Removed in favor of Chat Bubble) */}
 
             {feedback && (
               <div className="bounce-in" style={{
@@ -506,7 +518,7 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
                 boxShadow: `0 0 20px ${feedback.correct ? "rgba(0,255,65,0.4)" : "rgba(255,0,85,0.4)"}`,
                 zIndex: 20, whiteSpace: "nowrap"
               }}>
-                {feedback.correct ? "VALID +10" : "INVALID"}
+                {feedback.correct ? "VALID +10" : "TIDAK VALID"}
               </div>
             )}
           </div>
@@ -546,13 +558,13 @@ function LabelingStage({ onComplete }: { onComplete: (data: LabeledItem[], score
       ) : (
         <div className="neon-card" style={{ textAlign: "center", padding: "40px 20px", marginBottom: 20 }}>
           <div style={{ fontSize: 52, marginBottom: 12, textShadow: "0 0 20px #00FF41" }}>🏆</div>
-          <p style={{ fontSize: 22, fontWeight: 900, color: "#00FF41", margin: "0 0 8px", textShadow: "0 0 10px rgba(0,255,65,0.5)" }}>DATA LABELED</p>
-          <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>Score: {score} | Ready for AI Training</p>
+          <p style={{ fontSize: 22, fontWeight: 900, color: "#00FF41", margin: "0 0 8px", textShadow: "0 0 10px rgba(0,255,65,0.5)" }}>DATA TERLABELI</p>
+          <p style={{ fontSize: 14, color: "#94a3b8", margin: 0 }}>Skor: {score} | Siap untuk Pelatihan AI</p>
         </div>
       )}
 
       <button className="neon-btn" onClick={() => onComplete(labeled, score)} disabled={!canProceed} style={{ width: "100%" }}>
-        {canProceed ? "INITIATE TRAINING //" : `REQUIRES ${MIN_LABELS - labeled.length} MORE`}
+        {canProceed ? "MULAI PELATIHAN //" : `BUTUH ${MIN_LABELS - labeled.length} LAGI`}
       </button>
     </div>
   );
@@ -584,7 +596,7 @@ function TrainingStage({ labeled, score, onComplete }: { labeled: LabeledItem2[]
     }, 110);
   }
 
-  const trainingPhase = progress < 30 ? "ANALYZING PATTERNS..." : progress < 60 ? "ADJUSTING WEIGHTS..." : progress < 90 ? "OPTIMIZING NEURAL NET..." : "FINALIZING...";
+  const trainingPhase = progress < 30 ? "MENGANALISIS POLA..." : progress < 60 ? "MENYESUAIKAN PARAMETER..." : progress < 90 ? "MENGOPTIMALKAN JARINGAN..." : "MENYELESAIKAN...";
 
   return (
     <div className="fade-up">
@@ -608,12 +620,12 @@ function TrainingStage({ labeled, score, onComplete }: { labeled: LabeledItem2[]
         {!trained && !isTraining && (
           <>
             <div style={{ fontSize: 64, marginBottom: 16, filter: "drop-shadow(0 0 15px rgba(0,212,255,0.5))" }}>🤖</div>
-            <p style={{ fontWeight: 900, color: "#fff", fontSize: 22, marginBottom: 8, letterSpacing: 1 }}>AI SYSTEM READY</p>
+            <p style={{ fontWeight: 900, color: "#fff", fontSize: 22, marginBottom: 8, letterSpacing: 1 }}>SISTEM AI SIAP</p>
             <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 32 }}>
-              Training Size: {labeled.length} | Source Accuracy: <strong style={{ color: accuracy >= 70 ? "#00FF41" : "#FFD700" }}>{accuracy}%</strong>
+              Jumlah Data: {labeled.length} | Akurasi Sumber: <strong style={{ color: accuracy >= 70 ? "#00FF41" : "#FFD700" }}>{accuracy}%</strong>
             </p>
             <button className="neon-btn" onClick={startTraining}>
-              [ BEGIN TRAINING ]
+              [ MULAI PELATIHAN ]
             </button>
           </>
         )}
@@ -621,7 +633,7 @@ function TrainingStage({ labeled, score, onComplete }: { labeled: LabeledItem2[]
         {isTraining && (
           <>
             <div style={{ fontSize: 64, marginBottom: 16, filter: "drop-shadow(0 0 20px #FF0055)", animation: "neonPulse 0.8s infinite" }}>🧠</div>
-            <p style={{ fontWeight: 900, color: "#fff", fontSize: 20, marginBottom: 20, letterSpacing: 1 }}>TRAINING IN PROGRESS</p>
+            <p style={{ fontWeight: 900, color: "#fff", fontSize: 20, marginBottom: 20, letterSpacing: 1 }}>PELATIHAN BERLANGSUNG</p>
             <div style={{ marginBottom: 12 }}>
               <NeonProgressBar pct={progress} color="#FF0055" />
             </div>
@@ -632,12 +644,12 @@ function TrainingStage({ labeled, score, onComplete }: { labeled: LabeledItem2[]
         {trained && (
           <>
             <div style={{ fontSize: 64, marginBottom: 16, filter: "drop-shadow(0 0 15px #00FF41)" }}>✅</div>
-            <p style={{ fontWeight: 900, color: "#fff", fontSize: 22, marginBottom: 8, letterSpacing: 1 }}>TRAINING COMPLETE</p>
+            <p style={{ fontWeight: 900, color: "#fff", fontSize: 22, marginBottom: 8, letterSpacing: 1 }}>PELATIHAN SELESAI</p>
             <p style={{ fontSize: 14, color: "#94a3b8", marginBottom: 32 }}>
-              Model Accuracy Expected: <strong style={{ color: accuracy >= 70 ? "#00FF41" : "#FFD700", fontSize: 18 }}>{accuracy}%</strong>
+              Perkiraan Akurasi Model: <strong style={{ color: accuracy >= 70 ? "#00FF41" : "#FFD700", fontSize: 18 }}>{accuracy}%</strong>
             </p>
             <button className="neon-btn" onClick={onComplete} style={{ borderColor: "#00FF41", color: "#00FF41", boxShadow: "0 0 15px rgba(0,255,65,0.2), inset 0 0 8px rgba(0,255,65,0.2)" }}>
-              [ START TESTING ]
+              [ MULAI PENGUJIAN ]
             </button>
           </>
         )}
@@ -712,17 +724,17 @@ function TestingStage({ accuracy, onFinish }: { accuracy: number; onFinish: (res
         </div>
         
         <p style={{ fontSize: 24, fontWeight: 900, margin: "0 0 8px", color: "#fff", letterSpacing: 1 }}>{current.name}</p>
-        <p style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, letterSpacing: 1, marginBottom: 30 }}>TARGET UNKNOWN</p>
+        <p style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600, letterSpacing: 1, marginBottom: 30 }}>TARGET TIDAK DIKETAHUI</p>
 
         {!revealed && !isScanning && (
           <button className="neon-btn" onClick={startScan}>
-            [ INITIATE AI SCAN ]
+            [ MULAI PEMINDAIAN AI ]
           </button>
         )}
 
         {isScanning && (
           <div style={{ padding: "16px", color: "#00FF41", fontWeight: 800, letterSpacing: 2, textShadow: "0 0 10px #00FF41", animation: "pulseSoft 0.5s infinite" }}>
-            SCANNING...
+            MEMINDAI...
           </div>
         )}
 
@@ -733,17 +745,17 @@ function TestingStage({ accuracy, onFinish }: { accuracy: number; onFinish: (res
             border: `2px solid ${current.correct ? "#00FF41" : "#FF0055"}`,
             boxShadow: `0 0 20px ${current.correct ? "rgba(0,255,65,0.2)" : "rgba(255,0,85,0.2)"}`,
           }}>
-            <p style={{ fontSize: 12, margin: "0 0 8px", color: "#94a3b8", fontWeight: 800, letterSpacing: 1 }}>AI CLASSIFICATION:</p>
+            <p style={{ fontSize: 12, margin: "0 0 8px", color: "#94a3b8", fontWeight: 800, letterSpacing: 1 }}>KLASIFIKASI AI:</p>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginBottom: 12 }}>
               <span style={{ fontSize: 32, textShadow: `0 0 15px ${predCat.color}` }}>{predCat.icon}</span>
               <span style={{ fontSize: 24, fontWeight: 900, color: predCat.color, textShadow: `0 0 10px ${predCat.color}80` }}>{predCat.label.toUpperCase()}</span>
             </div>
             
             {current.correct ? (
-              <div style={{ color: "#00FF41", fontWeight: 900, fontSize: 14, letterSpacing: 1, background: "rgba(0,255,65,0.1)", padding: "8px", borderRadius: 8 }}>MATCH FOUND // +15 BONUS</div>
+              <div style={{ color: "#00FF41", fontWeight: 900, fontSize: 14, letterSpacing: 1, background: "rgba(0,255,65,0.1)", padding: "8px", borderRadius: 8 }}>COCOK // BONUS +15</div>
             ) : (
               <div style={{ color: "#FF0055", fontWeight: 800, fontSize: 13, letterSpacing: 0.5, background: "rgba(255,0,85,0.1)", padding: "8px", borderRadius: 8 }}>
-                ERROR // ACTUAL: {trueCat.icon} {trueCat.label.toUpperCase()}
+                GAGAL // SEHARUSNYA: {trueCat.icon} {trueCat.label.toUpperCase()}
               </div>
             )}
           </div>
@@ -752,7 +764,7 @@ function TestingStage({ accuracy, onFinish }: { accuracy: number; onFinish: (res
 
       {revealed && (
         <button className="neon-btn" onClick={next} style={{ width: "100%" }}>
-          {idx + 1 < items.length ? "[ NEXT TARGET ]" : "[ VIEW RESULTS ]"}
+          {idx + 1 < items.length ? "[ TARGET BERIKUTNYA ]" : "[ LIHAT HASIL ]"}
         </button>
       )}
     </div>
@@ -768,7 +780,7 @@ function ResultsStage({ results, totalScore, onReplay }: { results: PredictionIt
   return (
     <div className="fade-up">
       <div className="neon-card" style={{ textAlign: "center", padding: "40px 24px", marginBottom: 24, borderColor: color, boxShadow: `0 0 30px ${color}40, inset 0 0 15px ${color}20` }}>
-        <p style={{ fontSize: 14, color: "#94a3b8", fontWeight: 800, letterSpacing: 2, margin: "0 0 8px" }}>AI ACCURACY RATING</p>
+        <p style={{ fontSize: 14, color: "#94a3b8", fontWeight: 800, letterSpacing: 2, margin: "0 0 8px" }}>TINGKAT AKURASI AI</p>
         <p style={{ fontSize: 64, fontWeight: 900, color: "#fff", margin: "0 0 24px", lineHeight: 1, textShadow: `0 0 20px ${color}` }}>{accuracy}%</p>
 
         <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap", marginBottom: 32 }}>
@@ -786,13 +798,13 @@ function ResultsStage({ results, totalScore, onReplay }: { results: PredictionIt
         </div>
 
         <div style={{ padding: "20px", borderTop: "2px dashed #334155" }}>
-          <p style={{ fontSize: 12, fontWeight: 800, color: "#94a3b8", letterSpacing: 1, margin: "0 0 8px" }}>TOTAL SYSTEM SCORE</p>
+          <p style={{ fontSize: 12, fontWeight: 800, color: "#94a3b8", letterSpacing: 1, margin: "0 0 8px" }}>TOTAL SKOR SISTEM</p>
           <p style={{ fontSize: 42, fontWeight: 900, color: "#00D4FF", margin: 0, textShadow: "0 0 15px rgba(0,212,255,0.6)" }}>{totalScore}</p>
         </div>
       </div>
 
       <button className="neon-btn" onClick={onReplay} style={{ width: "100%", borderColor: "#FF0055", color: "#FF0055", boxShadow: "0 0 15px rgba(255,0,85,0.3), inset 0 0 8px rgba(255,0,85,0.2)" }}>
-        [ REBOOT SYSTEM ]
+        [ MUAT ULANG SISTEM ]
       </button>
     </div>
   );
@@ -852,9 +864,9 @@ export default function App() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 900, margin: "0 0 4px", color: "#fff", letterSpacing: 1, textShadow: "0 0 10px #00D4FF" }}>
-            [ PILAH_SAMPAH_OS ]
+            [ OS_PILAH_SAMPAH ]
           </h1>
-          <p style={{ fontSize: 12, color: "#00D4FF", fontWeight: 600, letterSpacing: 2, margin: 0 }}>V1.0 NEON EDITION</p>
+          <p style={{ fontSize: 12, color: "#00D4FF", fontWeight: 600, letterSpacing: 2, margin: 0 }}>EDISI NEON V1.0</p>
         </div>
         <div style={{ fontSize: 24, filter: "drop-shadow(0 0 8px #00D4FF)" }}>🤖</div>
       </div>
